@@ -9,6 +9,19 @@ Agentic RAG is a project designed to facilitate Retrieval-Augmented Generation (
 - **Method**: `POST`
 - **Description**: Handles requests related to the RAG agent, processing payloads of type `AgentRequest`.
 
+#### Usage
+To use the `agent_rag` API, you can use the following `curl` command:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/agent_rag' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "query": "your query here"
+}'
+```
+
 ### Upload File Endpoint
 - **Path**: `/upload`
 - **Method**: `POST`
@@ -29,5 +42,10 @@ Agentic RAG is a project designed to facilitate Retrieval-Augmented Generation (
 
 ## Getting Started
 
-To get started with the project, ensure you have Python 3.11 or higher installed. Install the dependencies listed in `pyproject.toml` and run the application using Uvicorn.
+To get started with the project, ensure you have Python 3.11 or higher installed. Use the `.env.example` file for environment configuration by copying it to `.env` and filling in the necessary values. Clone the repository and run the application using the following command from the root directory:
 
+```bash
+uv run app/main.py
+```
+
+UV Package manager must be installed in your system.
