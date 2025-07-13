@@ -14,7 +14,7 @@ def search_knowledge_base(query: str) -> str:
     """
     Searches the knowledge base for documents relevant to the provided query."""
     try:
-        docs = get_vector_store(COLLECTION_NAME).search(query=query, k=3)
+        docs = get_vector_store(COLLECTION_NAME).search_with_scores(query=query, k=5)
         return docs  # return Document objects, not a string
     except Exception as e:
         raise Exception(f"Search failed: {str(e)}")

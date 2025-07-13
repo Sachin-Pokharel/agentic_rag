@@ -102,7 +102,7 @@ async def synthesize_search_results(state: AgentState):
             return state
 
         # docs is expected to be List[Document]
-        combined_text = "\n\n".join([doc.page_content for doc in docs])
+        combined_text = "\n\n".join([doc.page_content for doc, _ in docs])
         query = state.get("user_input", "")
 
         prompt = f"""
