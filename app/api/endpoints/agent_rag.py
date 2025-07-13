@@ -14,7 +14,7 @@ graph = get_graph()
 @router.post("/agent_rag", response_model=AgentResponse)
 async def agent_rag_endpoint(payload: AgentRequest, request: Request):
     conversation_store = ConversationStore(
-        collection_name=os.getenv("MONGODB_RAG_CONVERSATIONS")
+        collection_name="rag_conversations",
     )
 
     # Determine conversation ID
