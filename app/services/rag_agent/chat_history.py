@@ -6,7 +6,7 @@ def get_chat_history_from_mongo(conversation_id: str, max_turns: int = 5, summar
     if not conversation_id:
         return []
 
-    store = ConversationStore(collection_name=os.getenv("MONGODB_RAG_CONVERSATIONS"))
+    store = ConversationStore(collection_name="rag_conversations")
     record = store.find_conversation_by_id(conversation_id)
     if not record or "messages" not in record:
         return []

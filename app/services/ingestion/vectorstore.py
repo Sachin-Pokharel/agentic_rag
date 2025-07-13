@@ -77,7 +77,7 @@ class LangChainQdrantStore:
                 "embedding_model": self.embedding_model_name,
             }
             
-        conversation_store = ConversationStore(collection_name=os.getenv('MONGODB_RAG_UPLOAD_METADATA_COLLECTION'))
+        conversation_store = ConversationStore(collection_name="rag_upload_metadata_info")
         conversation_store.get_collection().insert_many(
             build_metadata_records_from_documents(documents)
         )

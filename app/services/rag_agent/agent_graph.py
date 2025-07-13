@@ -60,7 +60,7 @@ async def process_user_input(state: AgentState):
                 "appointment_date": result.action.appointment_date,
                 "appointment_time": result.action.appointment_time
             }
-            booking_store = ConversationStore(collection_name=os.getenv('MONGODB_BOOKING_COLLECTION'))
+            booking_store = ConversationStore(collection_name="booking_interview")
             booking_store.save_booking(
                 build_booking_record(
                     username=result.action.user_name,

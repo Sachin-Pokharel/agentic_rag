@@ -27,7 +27,7 @@ class MongoDBInstance:
 
     def _init_connection(self):
         self.client = MongoClient(os.getenv("MONGODB_URI"))
-        self.db = self.client[os.getenv('MONGODB_DATABASE_NAME')]
+        self.db = self.client['agentic_rag_database']
 
     def get_database(self):
         return self.db
