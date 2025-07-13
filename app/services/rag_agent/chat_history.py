@@ -11,15 +11,21 @@ def get_chat_history_from_mongo(conversation_id: str, max_turns: int = 5, summar
     if not record or "messages" not in record:
         return []
 
-    all_msgs = record["messages"]
+    raw_messages = record["messages"]
+    all_msgs = []
+    for item in raw_messages:
+        if isinstance(item, dict):
+            all_msgs.append(item)
+        elif isinstance(item, list):
+            all_msgs.extend([m for m in item if isinstance(m, dict)])
+
     total_turns = len(all_msgs)
     chat_history = []
 
-    # Summarize older messages if above threshold
     if total_turns > summary_threshold:
         older = all_msgs[:-max_turns]
         text_to_summarize = "\n".join(
-            f"User: {m['user_query']}\nAssistant: {m['message_response']}"
+            f"User: {m.get('user_query', '')}\nAssistant: {m.get('message_response', '')}"
             for m in older
         )
         summary = synth_llm.invoke((
@@ -28,10 +34,13 @@ def get_chat_history_from_mongo(conversation_id: str, max_turns: int = 5, summar
         )).strip()
         chat_history.append({"role": "system", "content": summary})
 
-    # Add a sliding window of recent turns
     recent = all_msgs[-max_turns:]
     for m in recent:
-        chat_history.append({"role": "user", "content": m["user_query"]})
-        chat_history.append({"role": "assistant", "content": m["message_response"]})
+        user_q = m.get("user_query")
+        assistant_a = m.get("message_response")
+        if user_q:
+            chat_history.append({"role": "user", "content": user_q})
+        if assistant_a:
+            chat_history.append({"role": "assistant", "content": assistant_a})
 
     return chat_history
