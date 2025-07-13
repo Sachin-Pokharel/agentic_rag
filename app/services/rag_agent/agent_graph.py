@@ -1,14 +1,19 @@
-from typing import TypedDict, Optional, Literal, Union
+import os
 from langgraph.graph import StateGraph
 from langchain_openai import ChatOpenAI, OpenAI
 from langchain_core.prompts import PromptTemplate
-from pydantic import BaseModel, Field
-import os
+from schemas.schemas import AgentState, AgentAction
 from .tools import search_knowledge_base, book_interview
 from utils.crud import ConversationStore
 from utils.mongodb_message_builder import build_booking_record
 from dotenv import load_dotenv
+
 load_dotenv()
+
+# LangSmith setup
+os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_PROJECT"] = "agentic_rag"
 
 # Tool mapping
 TOOL_MAP = {
@@ -19,32 +24,8 @@ TOOL_MAP = {
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=os.getenv('OPENAI_API_KEY'))
 synth_llm = OpenAI(model="gpt-4o-mini", temperature=0)
 
-class AgentState(TypedDict):
-    user_input: str
-    selected_tool: Optional[str]
-    tool_input: Optional[dict]
-    tool_output: Optional[Union[str, list]]
-    chat_history: Optional[list]
 
-
-# Unified structured output models
-class SearchAction(BaseModel):
-    action_type: Literal["search"] = "search"
-    query: str = Field(description="The search query or question to look up")
-
-class BookingAction(BaseModel):
-    action_type: Literal["booking"] = "booking"
-    receiver_email: str = Field(description="Email address of the person to book interview with")
-    user_name: str = Field(description="Name of the user booking the interview")
-    appointment_date: str = Field(description="Date for the appointment (e.g., 'July 20', '2024-07-20')")
-    appointment_time: Optional[str] = Field(default=None, description="Time for the appointment (e.g., '2 PM', '14:00')")
-
-class AgentAction(BaseModel):
-    tool_name: Literal["search_knowledge_base", "book_interview"] = Field(description="The name of the tool to use")
-    reasoning: str = Field(description="Brief explanation of why this tool was chosen")
-    action: Union[SearchAction, BookingAction] = Field(description="The specific action to perform with the tool")
-
-def process_user_input(state: AgentState):
+async def process_user_input(state: AgentState):
     structured_llm = llm.with_structured_output(AgentAction)
     prompt = PromptTemplate.from_template("""
     You are an intelligent agent that can perform two types of actions:
@@ -67,7 +48,7 @@ def process_user_input(state: AgentState):
 
     try:
         chat_history_text = "\n".join(f"{m['role'].capitalize()}: {m['content']}" for m in state.get("chat_history", []))
-        result = structured_llm.invoke(prompt.format(input=state["user_input"], history=chat_history_text))
+        result = await structured_llm.ainvoke(prompt.format(input=state["user_input"], history=chat_history_text), config={"run_name": "process_user_input"})
         state["selected_tool"] = result.tool_name
 
         if result.action.action_type == "search":
@@ -113,7 +94,7 @@ def run_tool(state: AgentState):
         state["tool_output"] = f"Unknown tool: {state['selected_tool']}"
     return state
 
-def synthesize_search_results(state: AgentState):
+async def synthesize_search_results(state: AgentState):
     if state['selected_tool'] == "search_knowledge_base":
         docs = state.get("tool_output", [])
         if not docs:
@@ -126,6 +107,8 @@ def synthesize_search_results(state: AgentState):
 
         prompt = f"""
 You are an expert assistant. Using the following documents, answer the query concisely and clearly.
+Make sure to provide a complete and grammatically correct response.
+
 
 Query: {query}
 
@@ -135,9 +118,8 @@ Documents:
 Answer:
 """
 
-        answer = synth_llm.invoke(prompt).strip()
+        answer = await synth_llm.ainvoke(prompt, max_tokens=2048, config={"run_name": "synthesize_search_results"})
         state["tool_output"] = answer
-        print(f"Input query: {query}")
     return state
 
 def postprocess_tool_output(state: AgentState):
@@ -146,7 +128,7 @@ def postprocess_tool_output(state: AgentState):
 
     if tool == "book_interview":
         if "Failed" in raw_output or "Error" in raw_output:
-            state["tool_output"] = f"Sorry, we couldn't send the confirmation email. Details: {raw_output}"
+            state["tool_output"] = f"Sorry, we couldn't send the confirmation email."
         else:
             state["tool_output"] = f"Success! {raw_output} We look forward to your interview."
     # You can add more tool-specific postprocessing here if needed

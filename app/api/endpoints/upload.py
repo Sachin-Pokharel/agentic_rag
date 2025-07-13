@@ -9,7 +9,7 @@ from services.ingestion.vectorstore import LangChainQdrantStore
 
 router = APIRouter()
 
-MAX_FILE_SIZE_MB = 10  # optional limit (in MB)
+MAX_FILE_SIZE_MB = 20  # optional limit (in MB)
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):

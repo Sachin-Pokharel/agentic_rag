@@ -1,57 +1,33 @@
-# Starter Template Project
+# Agentic RAG
 
-## Overview
-This project is a Python-based application structured with modular components, including API endpoints, configuration management, and utility scripts. It is containerized using Docker for easy deployment and scalability.
+Agentic RAG is a project designed to facilitate Retrieval-Augmented Generation (RAG) tasks using a combination of modern web technologies and AI models. This project leverages FastAPI for building APIs, and integrates various language processing libraries to enhance its capabilities.
 
-## Project Structure
-- `docker/`: Contains Docker-related files including `Dockerfile` and `docker-compose.yml` for containerization.
-- `src/`: Main source code directory.
-  - `main.py`: Application entry point.
-  - `schemas.py`: Data schemas used in the application.
-  - `api/`: API implementation and endpoints.
-  - `config/`: Configuration files.
-- `scripts/`: Utility and automation scripts.
-- `tests/`: Test cases for the application.
-- `utils/`: Utility modules to support the application.
+## APIs
 
-## Prerequisites
-- Python 3.8 or higher
-- Docker (for containerization)
-- pip (Python package installer)
+### Agent RAG Endpoint
+- **Path**: `/agent_rag`
+- **Method**: `POST`
+- **Description**: Handles requests related to the RAG agent, processing payloads of type `AgentRequest`.
 
-## Installation
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd starter-template
-   ```
+### Upload File Endpoint
+- **Path**: `/upload`
+- **Method**: `POST`
+- **Description**: Allows users to upload files, accepting a file parameter of type `UploadFile`.
 
-2. (Optional) Create and activate a virtual environment:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate 
-   ```
+## Technologies Used
 
-## Running the Application
+- **FastAPI**: For building high-performance APIs.
+- **FastEmbed, LangChain, LangChain-Community, LangChain-OpenAI, LangChain-Qdrant, LangGraph, LangSmith**: Libraries for language processing and RAG tasks.
+- **OpenAI**: For interacting with AI models.
+- **Pydantic-Settings**: For data validation and settings management.
+- **PyMongo**: For MongoDB interactions.
+- **PyMuPDF**: For PDF file manipulation.
+- **Python-Multipart**: For handling file uploads.
+- **Qdrant-Client**: For vector search operations.
+- **Secure-SMTPLib**: For secure email sending.
+- **Uvicorn**: As the ASGI server.
 
-### Using Docker
-Build and run the Docker container:
-```bash
-docker-compose up --build
-```
-The application will be accessible at the configured API endpoint.
+## Getting Started
 
-### Without Docker
-Run the application directly:
-```bash
-python src/main.py
-```
+To get started with the project, ensure you have Python 3.11 or higher installed. Install the dependencies listed in `pyproject.toml` and run the application using Uvicorn.
 
-## Testing
-Run tests using your preferred test runner, for example:
-```bash
-pytest tests/
-```
-
-## Contributing
-Contributions are welcome! Please open issues or submit pull requests for improvements or bug fixes.
